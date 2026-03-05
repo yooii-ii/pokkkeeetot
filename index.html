@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Mini Platform Game</title>
+
+<style>
+
+body{
+margin:0;
+background:#111;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+font-family:sans-serif;
+color:white;
+}
+
+#game{
+border:4px solid white;
+background:linear-gradient(#5ec0ff,#c2f0ff);
+}
+
+#score{
+position:absolute;
+top:20px;
+left:20px;
+font-size:24px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="score">Score: 0</div>
+<canvas id="game" width="800" height="400"></canvas>
+
+<script>
+
+const canvas = document.getElementById("game")
+const ctx = canvas.getContext("2d")
+
+let score = 0
+
+const player = {
+x:100,
+y:300,
+width:40,
+height:40,
+vx:0,
+vy:0,
+jump:false
+}
+
+const gravity = 0.8
+const ground = 340
+
+const stars = []
+
+function spawnStar(){
+stars.push({
+x:Math.random()*760,
+y:Math.random()*200+50,
+size:20
+})
+}
+
+setInterval(spawnStar,2000)
+
+const keys = {}
+
+document.addEventListener("keydown",e=>{
+keys[e.code]=true
+})
+
+document.addEventListener("keyup",e=>{
+keys[e.code]=false
+})
+
+function update(){
+
+player.vx=0
+
+if(keys["ArrowRight"]) player.vx=5
+if(keys["ArrowLeft"]) player.vx=-5
+
+if(keys["Space"] && !player.jump){
+player.vy=-15
+player.jump=true
+}
+
+player.vy+=gravity
+player.x+=player.vx
+player.y+=player.vy
+
+if(player.y>ground){
+player.y=ground
+player.vy=0
+player.jump=false
+}
+
+stars.forEach((s,i)=>{
+if(
+player.x < s.x + s.size &&
+player.x + player.width > s.x &&
+player.y < s.y + s.size &&
+player.y + player.height > s.y
+){
+stars.splice(i,1)
+score++
+document.getElementById("score").innerText="Score: "+score
+}
+})
+
+}
+
+function draw(){
+
+ctx.clearRect(0,0,800,400)
+
+ctx.fillStyle="green"
+ctx.fillRect(0,380,800,20)
+
+ctx.fillStyle="red"
+ctx.fillRect(player.x,player.y,player.width,player.height)
+
+ctx.fillStyle="yellow"
+stars.forEach(s=>{
+ctx.beginPath()
+ctx.arc(s.x,s.y,s.size/2,0,Math.PI*2)
+ctx.fill()
+})
+
+}
+
+function gameLoop(){
+update()
+draw()
+requestAnimationFrame(gameLoop)
+}
+
+gameLoop()
+
+</script>
+
+</body>
+</html>
